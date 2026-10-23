@@ -126,3 +126,121 @@ Result<int, String> computeSquare(String rawInput) {
 }
 
 ```
+
+Step 3: Connect to the UI (lib/main.dart)
+
+1. **Bootstrap the Application:**
+Create the application entry point `main()` and wrap the root with `MaterialApp`. Configure Material 3 theming with a color seed and establish `MonadPlaygroundScreen` as the home destination.
+
+```dart
+void main() {
+  runApp(const MonadApp());
+}
+
+class MonadApp extends StatelessWidget {
+  const MonadApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+      home: const MonadPlaygroundScreen(),
+    );
+  }
+}
+
+```
+
+
+2. **Initialize State and Controller:**
+Define the `StatefulWidget` and its state class. Store the user's raw text using a `TextEditingController` and declare the state variable directly as an optional monad: `Result<int, String>? _calculationResult`.
+
+```dart
+class MonadPlaygroundScreen extends StatefulWidget {
+  const MonadPlaygroundScreen({super.key});
+
+  @override
+  State<MonadPlaygroundScreen> createState() => _MonadPlaygroundScreenState();
+}
+
+class _MonadPlaygroundScreenState extends State<MonadPlaygroundScreen> {
+  final TextEditingController _controller = TextEditingController();
+  Result<int, String>? _calculationResult;
+  // ...
+}
+
+```
+
+
+3. **Connect UI Events to the Pipeline:**
+Create the `_onCalculate` trigger. When the user taps the run button, pass the raw string from `_controller.text` into `computeSquare()` and wrap the assignment inside `setState` to trigger a widget rebuild.
+
+```dart
+void _onCalculate() {
+  setState(() {
+    _calculationResult = computeSquare(_controller.text);
+  });
+}
+
+```
+
+
+4. **Construct the Input and Action Layout:**
+Build a standard form layout containing the `TextField` to capture user input and an `ElevatedButton` bound to `_onCalculate`.
+
+```dart
+TextField(
+  controller: _controller,
+  decoration: const InputDecoration(
+    labelText: 'Enter an integer',
+    hintText: 'e.g. 5, -2, or abc',
+    border: OutlineInputBorder(),
+  ),
+  keyboardType: TextInputType.text,
+),
+const SizedBox(height: 16),
+ElevatedButton(
+  onPressed: _onCalculate,
+  child: const Text('Run Pipeline (Square)'),
+),
+
+```
+
+
+5. **Exhaustively Pattern Match the Result into UI:**
+Use a collection-if and Dart 3 switch expression inside the widget tree to unwrap the monad. The compiler guarantees that both `Success` and `Failure` are handled without missing edge cases, rendering customized cards based on the extracted values.
+
+```dart
+if (_calculationResult != null)
+  switch (_calculationResult!) {
+    Success(:final value) => Card(
+        color: Colors.green.shade50,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Success! Result is: $value',
+            style: TextStyle(
+              color: Colors.green.shade900,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    Failure(:final error) => Card(
+        color: Colors.red.shade50,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Error: $error',
+            style: TextStyle(
+              color: Colors.red.shade900,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
+  },
+
+```
