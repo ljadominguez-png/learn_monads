@@ -245,6 +245,6 @@ if (_calculationResult != null)
 
 ```
 
-#Author
+# Author
 
 * **Dominguez, Laurence Jhon** 
