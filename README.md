@@ -244,3 +244,7 @@ if (_calculationResult != null)
   },
 
 ```
+
+#Author
+
+* **Dominguez, Laurence Jhon** 
